@@ -26,6 +26,7 @@ services:
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:29092
     depends_on:
       - kafka
+
   airflow-postgres:
     image: postgres:15
     container_name: logistics-airflow-postgres
@@ -37,7 +38,7 @@ services:
       - "5433:5432"
 
   airflow-webserver:
-    image: apache/airflow:2.9.3
+    build: .
     container_name: logistics-airflow-webserver
     depends_on:
       - airflow-postgres
@@ -47,6 +48,7 @@ services:
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-postgres:5432/airflow
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__WEBSERVER__SECRET_KEY: "my_fixed_secret_key_123"
     volumes:
       - ../airflow/dags:/opt/airflow/dags
       - ../spark:/opt/airflow/spark
@@ -57,7 +59,7 @@ services:
                airflow webserver"
 
   airflow-scheduler:
-    image: apache/airflow:2.9.3
+    build: .
     container_name: logistics-airflow-scheduler
     depends_on:
       - airflow-webserver
@@ -65,6 +67,7 @@ services:
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-postgres:5432/airflow
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__WEBSERVER__SECRET_KEY: "my_fixed_secret_key_123"
     volumes:
       - ../airflow/dags:/opt/airflow/dags
       - ../spark:/opt/airflow/spark
