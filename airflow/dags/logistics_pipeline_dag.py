@@ -4,7 +4,7 @@ from datetime import datetime
 
 default_args = {
     "owner": "numan",
-    "retries": 2,
+    "retries": 0,
 }
 
 with DAG(

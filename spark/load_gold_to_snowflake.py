@@ -1,18 +1,38 @@
 from spark_session import spark
 from dotenv import load_dotenv
 import os
+import re
 
-load_dotenv()
+load_dotenv(
+    "/home/numan/data_engingeering_real-time_logistics_pipeline/.env",
+    override=True
+)
 
+print("USER:", os.getenv("SNOWFLAKE_USER"))
+print("ACCOUNT:", os.getenv("SNOWFLAKE_ACCOUNT"))
+print("ROLE:", os.getenv("SNOWFLAKE_ROLE"))
+
+with open("/home/numan/data_engingeering_real-time_logistics_pipeline/rsa_key.p8", "r") as f:
+    private_key = f.read()
+
+private_key = re.sub(
+    r"-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\n|\r",
+    "",
+    private_key
+)
 sf_options = {
     "sfURL": f"{os.getenv('SNOWFLAKE_ACCOUNT')}.snowflakecomputing.com",
     "sfUser": os.getenv("SNOWFLAKE_USER"),
-    "sfPassword": os.getenv("SNOWFLAKE_PASSWORD"),
     "sfDatabase": os.getenv("SNOWFLAKE_DATABASE"),
     "sfSchema": os.getenv("SNOWFLAKE_SCHEMA"),
     "sfWarehouse": os.getenv("SNOWFLAKE_WAREHOUSE"),
     "sfRole": os.getenv("SNOWFLAKE_ROLE"),
+    "pem_private_key": private_key
 }
+
+print({k: ("***" if "key" in k.lower() else v) for k, v in sf_options.items()})
+
+
 
 tables = {
     "DIM_DRIVER": "delta/gold/dim_driver",
@@ -46,3 +66,4 @@ for table_name, path in tables.items():
     print(f"{table_name} loaded")
 
 spark.stop()
+
