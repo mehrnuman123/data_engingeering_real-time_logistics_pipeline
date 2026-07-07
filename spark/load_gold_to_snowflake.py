@@ -12,7 +12,7 @@ print("USER:", os.getenv("SNOWFLAKE_USER"))
 print("ACCOUNT:", os.getenv("SNOWFLAKE_ACCOUNT"))
 print("ROLE:", os.getenv("SNOWFLAKE_ROLE"))
 
-with open("/home/numan/data_engingeering_real-time_logistics_pipeline/rsa_key.p8", "r") as f:
+with open("/home/numan/data_engingeering_real-time_logistics_pipeline/secrets/rsa_key.p8", "r") as f:
     private_key = f.read()
 
 private_key = re.sub(
