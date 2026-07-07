@@ -4,6 +4,29 @@ A production-style end-to-end data engineering project that simulates real-time 
 
 ---
 
+
+
+
+# Project Output
+
+## Pipeline Architecture
+
+<img src="output_images/architecture.png" width="900">
+
+---
+
+## Airflow DAG
+
+<img src="output_images/airflow_dag_success.png" width="900">
+
+---
+
+## Snowflake Gold Layer
+
+<img src="output_images/snowflake_tables.png" width="900">
+
+
+
 ## Architecture
 
 ```text
