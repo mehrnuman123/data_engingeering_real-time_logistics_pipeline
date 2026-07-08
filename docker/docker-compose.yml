@@ -4,6 +4,7 @@ services:
   kafka:
     image: bitnamilegacy/kafka:3.7.0
     container_name: logistics-kafka
+    restart: unless-stopped
     ports:
       - "9092:9092"
     environment:
@@ -15,10 +16,16 @@ services:
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
       - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+    volumes:
+      - kafka_data:/bitnami/kafka
+    networks:
+      - logistics_net
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     container_name: logistics-kafka-ui
+    restart: unless-stopped
     ports:
       - "8080:8080"
     environment:
@@ -26,50 +33,86 @@ services:
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:29092
     depends_on:
       - kafka
+    networks:
+      - logistics_net
 
   airflow-postgres:
     image: postgres:15
     container_name: logistics-airflow-postgres
+    restart: unless-stopped
     environment:
       POSTGRES_USER: airflow
       POSTGRES_PASSWORD: airflow
       POSTGRES_DB: airflow
     ports:
       - "5433:5432"
+    volumes:
+      - airflow_postgres_data:/var/lib/postgresql/data
+    networks:
+      - logistics_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U airflow -d airflow"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   airflow-webserver:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: logistics-airflow-webserver
+    restart: unless-stopped
     depends_on:
-      - airflow-postgres
+      airflow-postgres:
+        condition: service_healthy
     ports:
       - "8081:8080"
     environment:
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-postgres:5432/airflow
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
-      AIRFLOW__WEBSERVER__SECRET_KEY: "my_fixed_secret_key_123"
+      AIRFLOW__WEBSERVER__SECRET_KEY: my_fixed_secret_key_123
     volumes:
       - ../airflow/dags:/opt/airflow/dags
       - ../spark:/opt/airflow/spark
       - ../delta:/opt/airflow/delta
+      - ../.env:/opt/airflow/.env
     command: >
       bash -c "airflow db migrate &&
                airflow users create --username admin --password admin --firstname admin --lastname admin --role Admin --email admin@example.com || true &&
                airflow webserver"
+    networks:
+      - logistics_net
 
   airflow-scheduler:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: logistics-airflow-scheduler
+    restart: unless-stopped
     depends_on:
-      - airflow-webserver
+      airflow-postgres:
+        condition: service_healthy
+      airflow-webserver:
+        condition: service_started
     environment:
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-postgres:5432/airflow
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
-      AIRFLOW__WEBSERVER__SECRET_KEY: "my_fixed_secret_key_123"
+      AIRFLOW__WEBSERVER__SECRET_KEY: my_fixed_secret_key_123
     volumes:
       - ../airflow/dags:/opt/airflow/dags
       - ../spark:/opt/airflow/spark
       - ../delta:/opt/airflow/delta
+      - ../.env:/opt/airflow/.env
     command: scheduler
+    networks:
+      - logistics_net
+
+volumes:
+  kafka_data:
+  airflow_postgres_data:
+
+networks:
+  logistics_net:
+    driver: bridge

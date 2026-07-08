@@ -26,9 +26,9 @@ A production-style end-to-end data engineering project that simulates real-time 
 <img src="output_images/airflow.JPG" width="900">
 
 
-## Snowflake fact table
+## Snowflake analytics
 
-<img src="output_images/snowflake_fact_shipment.JPG" width="900">
+<img src="output_images/snowflake.JPG" width="900">
 
 
 
