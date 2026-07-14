@@ -11,24 +11,24 @@ A production-style end-to-end data engineering project that simulates real-time 
 
 ## Producer and consumer log
 
-<img src="output_images/procducer_consumer.JPG" width="900">
+<img src="docs/procducer_consumer.JPG" width="900">
 
 ---
 
 ## Kafka ui
 
-<img src="output_images/kafka_ui.JPG" width="900">
+<img src="docs/kafka_ui.JPG" width="900">
 
 ---
 
 ## Airflow dag
 
-<img src="output_images/airflow.JPG" width="900">
+<img src="docs/airflow.JPG" width="900">
 
 
 ## Snowflake analytics
 
-<img src="output_images/snowflake.JPG" width="900">
+<img src="docs/snowflake.JPG" width="900">
 
 
 
